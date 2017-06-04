@@ -30,9 +30,11 @@ int main()
 {
   uWS::Hub h;
 
+      	cout<<"Before UKF"<<endl;
   // Create a Kalman Filter instance
   UKF ukf;
 
+      	cout<<"After UKF"<<endl;
   // used to compute the RMSE later
   Tools tools;
   vector<VectorXd> estimations;
@@ -45,10 +47,8 @@ int main()
 
     if (length && length > 2 && data[0] == '4' && data[1] == '2')
     {
-
       auto s = hasData(std::string(data));
       if (s != "") {
-      	
         auto j = json::parse(s);
 
         std::string event = j[0].get<std::string>();
@@ -153,6 +153,7 @@ int main()
   // We don't need this since we're not using HTTP but if it's removed the program
   // doesn't compile :-(
   h.onHttpRequest([](uWS::HttpResponse *res, uWS::HttpRequest req, char *data, size_t, size_t) {
+	cout<<"HTTP REQ"<<endl;
     const std::string s = "<h1>Hello world!</h1>";
     if (req.getUrl().valueLength == 1)
     {
