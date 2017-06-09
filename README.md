@@ -47,5 +47,5 @@ OUTPUT: values provided by the c++ program to the simulator
 5. Run simulator for Term 2 and play Project 1/2 EKF and UKF
 
 # Output Result
-![Dataset-1](./output/dataset-1)
-![Dataset-2](./output/dataset-2)
+<img src="./output/dataset-1" data-canonical-src="./output/dataset-2" width="300" height="250" />
+<img src="./output/dataset-2" data-canonical-src="./output/dataset-2" width="300" height="250" />
