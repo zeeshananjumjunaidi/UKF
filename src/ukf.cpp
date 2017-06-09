@@ -2,12 +2,13 @@
 #include "Eigen/Dense"
 #include <iostream>
 #include "tools.h"
-using namespace std;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
-#define EPS 0.001 // small number
+using namespace std;
+
+#define EPS 0.00001 // small number
 
 /**
 * Initializes Unscented Kalman filter
@@ -18,7 +19,7 @@ UKF::UKF() {
 	is_initialized_ = false;
 	// if this is false, laser measurements will be ignored (except during init)
 	use_laser_ = true;
-	// if this is false, radar measurements will be ignored (except during init)
+	// if this is false, radar 
 	use_radar_ = true;
 	// initial state vector
 	x_ = VectorXd(5);
@@ -91,8 +92,8 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 			// Convert radar from polar to cartesian coordinates and initialize state.
 			float rho = measurement_pack.raw_measurements_[0]; // range
 			float phi = measurement_pack.raw_measurements_[1]; // bearing
-			float rho_dot = measurement_pack.raw_measurements_[2]; // velocity of rho
-																   // Coordinates convertion from polar to cartesian
+			float rho_dot = measurement_pack.raw_measurements_[2]; // rho
+			// Coordinates convertion from polar to cartesian
 			float px = rho * cos(phi);
 			float py = rho * sin(phi);
 			float vx = rho_dot * cos(phi);
@@ -112,8 +113,6 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 		time_us_ = measurement_pack.timestamp_;
 		// Done initializing, no need to predict or update
 		is_initialized_ = true;
-		//cout << "Init" << endl;
-		//cout << "x_" << x_ << endl;
 		return;
 	}
 
@@ -122,25 +121,22 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 	dt /= 1000000.0; // convert micros to s
 	time_us_ = measurement_pack.timestamp_;
 	Prediction(dt);
-	//cout << "predict:" << endl;
-	//cout << "x_" << endl << x_ << endl;
+	
 	if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
-		//cout << "Radar " << measurement_pack.raw_measurements_[0] << " " << measurement_pack.raw_measurements_[1] << endl;
 		UpdateRadar(measurement_pack);
 	}
 	if (measurement_pack.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
-		//cout << "Lidar " << measurement_pack.raw_measurements_[0] << " " << measurement_pack.raw_measurements_[1] << endl;
 		UpdateLidar(measurement_pack);
 	}
 }
 
 /**
 * Predicts sigma points, the state, and the state covariance matrix.
-* @param {double} delta_t the change in time (in seconds) between the last
+* @param {double} dt the change in time (in seconds) between the last
 * measurement and this one.
 */
-void UKF::Prediction(double delta_t) {
-	double delta_t2 = delta_t*delta_t;
+void UKF::Prediction(double dt) {
+	double delta_t2 = dt * dt;
 	// Augmented mean vector
 	VectorXd x_aug = VectorXd(n_aug_);
 	// Augmented state covarience matrix
@@ -180,7 +176,7 @@ void UKF::Prediction(double delta_t) {
 		// Precalculate sin and cos for optimization
 		double sin_yaw = sin(yaw);
 		double cos_yaw = cos(yaw);
-		double arg = yaw + yawd*delta_t;
+		double arg = yaw + yawd*dt;
 
 		// Predicted state values
 		double px_p, py_p;
@@ -191,7 +187,7 @@ void UKF::Prediction(double delta_t) {
 			py_p = p_y + v_yawd * (cos_yaw - cos(arg));
 		}
 		else {
-			double v_delta_t = v*delta_t;
+			double v_delta_t = v*dt;
 			px_p = p_x + v_delta_t*cos_yaw;
 			py_p = p_y + v_delta_t*sin_yaw;
 		}
@@ -202,9 +198,9 @@ void UKF::Prediction(double delta_t) {
 		// Add noise
 		px_p += 0.5*nu_a*delta_t2*cos_yaw;
 		py_p += 0.5*nu_a*delta_t2*sin_yaw;
-		v_p += nu_a*delta_t;
+		v_p += nu_a*dt;
 		yaw_p += 0.5*nu_yawdd*delta_t2;
-		yawd_p += nu_yawdd*delta_t;
+		yawd_p += nu_yawdd*dt;
 
 		// Write predicted sigma point into right column
 		Xsig_pred_(0, i) = px_p;
@@ -300,7 +296,7 @@ void UKF::UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z) {
 		//residual
 		VectorXd z_diff = Zsig.col(i) - z_pred;
 		if (meas_package.sensor_type_ == MeasurementPackage::RADAR) { // Radar
-																	  // Angle normalization
+		// Angle normalization
 			tools_.NormAng(&(z_diff(1)));
 		}
 		// State difference

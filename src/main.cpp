@@ -1,10 +1,16 @@
 #include <uWS/uWS.h>
 #include <iostream>
+#include <algorithm>
 #include "json.hpp"
 #include <math.h>
 #include "ukf.h"
 #include "tools.h"
+#include <vector>
+#include "Eigen/Dense"
 
+
+
+using Eigen::VectorXd;
 using namespace std;
 
 // for convenience
@@ -26,25 +32,24 @@ std::string hasData(std::string s) {
   return "";
 }
 
-int main()
+
+
+int main(int argc,char** argv)
 {
   uWS::Hub h;
 
-      	cout<<"Before UKF"<<endl;
   // Create a Kalman Filter instance
   UKF ukf;
 
-      	cout<<"After UKF"<<endl;
-  // used to compute the RMSE later
+  // used to compute the RMSE or Clamp angle
   Tools tools;
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
-
-  h.onMessage([&ukf,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  
+    h.onMessage([&ukf,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
-
     if (length && length > 2 && data[0] == '4' && data[1] == '2')
     {
       auto s = hasData(std::string(data));
@@ -54,8 +59,7 @@ int main()
         std::string event = j[0].get<std::string>();
         
         if (event == "telemetry") {
-          // j[1] is the data JSON object
-          
+          // j[1] is the data JSON object          
           string sensor_measurment = j[1]["sensor_measurement"];
           
           MeasurementPackage meas_package;
@@ -114,7 +118,7 @@ int main()
 
     	  double p_x = ukf.x_(0);
     	  double p_y = ukf.x_(1);
-    	  double v  = ukf.x_(2);
+    	  double v  = ukf.x_(2); 
     	  double yaw = ukf.x_(3);
 
     	  double v1 = cos(yaw)*v;
@@ -149,7 +153,7 @@ int main()
     }
 
   });
-
+  
   // We don't need this since we're not using HTTP but if it's removed the program
   // doesn't compile :-(
   h.onHttpRequest([](uWS::HttpResponse *res, uWS::HttpRequest req, char *data, size_t, size_t) {
@@ -169,7 +173,6 @@ int main()
   h.onConnection([&h](uWS::WebSocket<uWS::SERVER> ws, uWS::HttpRequest req) {
     std::cout << "Connected!!!" << std::endl;
   });
-
   h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code, char *message, size_t length) {
     ws.close();
     std::cout << "Disconnected" << std::endl;
