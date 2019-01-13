@@ -1,7 +1,7 @@
 # Unscented Kalman Filter
 Self-Driving Car Engineer Nanodegree Program
 
-In this project I build an Unscented Kalman Filter to estimate the state of a moving object of interest (Vehicle) with noisy lidar and radar measurPements.
+In this project I build an Unscented Kalman Filter to estimate the state of a moving object of interest (Vehicle) with noisy lidar and radar measurements.
 
 This repository includes two files that can be used to set up and intall [uWebSocketIO](https://github.com/uWebSockets/uWebSockets) for either Linux or Mac systems. For windows you can use either Docker, VMware, or even [Windows 10 Bash on Ubuntu](https://www.howtogeek.com/249966/how-to-install-and-use-the-linux-bash-shell-on-windows-10/) to install uWebSocketIO. 
 
